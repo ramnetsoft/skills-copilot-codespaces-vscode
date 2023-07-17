@@ -22,3 +22,5 @@ app.get('/api/comments', (req, res) => {
 app.post('/api/comments', (req, res) => {
   const newComment = {
     id: Date.now(),
+  }
+});
