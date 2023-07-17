@@ -1,26 +1,45 @@
-// Create Web server
+// create webserver
 const express = require('express');
-const bodyParser = require('body-parser');
-const app = express();
-const comments = require('./comments.json');
-const fs = require('fs');
-const path = require('path');
+const router = express.Router();
+// import model
+const Comment = require('../models/comment');
 
-// Use body-parser to parse POST requests
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
-
-// Use express.static to serve static files
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Set up GET route to serve comments.json
-app.get('/api/comments', (req, res) => {
-  res.json(comments);
-});
-
-// Set up POST route to save comments to comments.json
-app.post('/api/comments', (req, res) => {
-  const newComment = {
-    id: Date.now(),
+// create route
+// get all comments for a post
+router.get('/:postId', async (req, res) => {
+  try {
+    const comments = await Comment.find({ postId: req.params.postId });
+    res.json(comments);
+  } catch (err) {
+    res.json({ message: err });
   }
 });
+
+// create comment
+router.post('/', async (req, res) => {
+  const comment = new Comment({
+    postId: req.body.postId,
+    userId: req.body.userId,
+    text: req.body.text,
+  });
+  try {
+    const savedComment = await comment.save();
+    res.json(savedComment);
+  } catch (err) {
+    res.json({ message: err });
+  }
+});
+
+// delete comment
+router.delete('/:commentId', async (req, res) => {
+  try {
+    const removedComment = await Comment.remove({
+      _id: req.params.commentId,
+    });
+    res.json(removedComment);
+  } catch (err) {
+    res.json({ message: err });
+  }
+});
+
+module.exports = router;
